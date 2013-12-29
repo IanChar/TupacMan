@@ -19,9 +19,9 @@ public class Pacman extends GraphicsProgram {
 	
 	private static final int SMALL_DOT_SIZE=10;
 	private static final int WALL_SIZE=30;
-	private static final int PACMAN_SIZE = 24;
+	private static final int PACMAN_SIZE = 28;
 	private static final double EPSILON = 1e-10;
-	private static final int DELAY = 6;
+	private static final int DELAY = 7;
 	private static final double SPEED = 1;
 	
 	
@@ -31,7 +31,7 @@ public class Pacman extends GraphicsProgram {
 	private double vx=SPEED;
 	private double vy=0;
 	private GPacman pacman;
-//	private boolean[][] wallsArray;
+	private int turnRequest=0;
 	
 	public void init() {
 		setUpGameboard();
@@ -40,7 +40,9 @@ public class Pacman extends GraphicsProgram {
 		startGame();
 		
 		while(true){
+		
 			move();
+			changeDirection();
 			adjustForCollision();
 			eatDots();
 			pause(DELAY);
@@ -66,7 +68,7 @@ public class Pacman extends GraphicsProgram {
 	private void setUpGameboard() {
 		setBackground(Color.black);
 		pacman=new GPacman(PACMAN_SIZE);
-		add(pacman,WALL_SIZE+3,WALL_SIZE+3);
+		add(pacman,WALL_SIZE+1,WALL_SIZE+1);
 		addWalls();
 	}
 	private void addWalls() {
@@ -119,6 +121,29 @@ public class Pacman extends GraphicsProgram {
 		wall.setFillColor(new Color(28, 70, 222));
 		add(wall,xcoord,ycoord);
 	}
+	private void changeDirection() {
+		if(turnRequest==1&&canGoVertical()&&topIsClear()) {
+			vx=0;
+			vy=-1;
+			turnRequest=0;
+		}
+		else if(turnRequest==2&&canGoVertical()&&bottomIsClear()) {
+			vx=0;
+			vy=1;
+			turnRequest=0;
+		}
+		else if(turnRequest==3&&canGoHorizontal()&&leftIsClear()) {
+			vx=-1;
+			vy=0;
+			turnRequest=0;
+		}
+		else if(turnRequest==4&&canGoHorizontal()&&rightIsClear()) {
+			vx=1;
+			vy=0;
+			turnRequest=0;
+		}
+	
+	}
 	private void move() {
 		if(vy<0) {
 			pacman.turnUp();
@@ -162,20 +187,36 @@ public class Pacman extends GraphicsProgram {
 //		}
 //		return object;
 //	}
-	private boolean leftIsClear() {
-		return true;
-		
+	private boolean canGoHorizontal() {
+		double ycoord= pacman.getY()+PACMAN_SIZE/2;
+		for(int i=0;i<NROWS;i++) {
+			if((15+i*30-1)<ycoord&&ycoord<(15+i*30+1)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	private boolean canGoVertical() {
+		double xcoord= pacman.getX()+PACMAN_SIZE/2;
+		for(int i=0;i<NCOLS;i++) {
+			if((15+i*30-1)<=xcoord&&xcoord<=(15+i*30+1)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	private boolean topIsClear() {
-		return getElementAt(pacman.getX()-1, pacman.getY()-1.5)==null&&getElementAt(pacman.getX()+PACMAN_SIZE+1, pacman.getY()-1.5)==null;
-	}
-	private boolean rightIsClear() {
-		return getElementAt(pacman.getX()+PACMAN_SIZE+1.5, pacman.getY()-1)==null&&getElementAt(pacman.getX()+PACMAN_SIZE+1.5, pacman.getY()+PACMAN_SIZE+1)==null;
+        return getElementAt(pacman.getX()+PACMAN_SIZE/2, pacman.getY()-3)==null;
 	}
 	private boolean bottomIsClear() {
-		return getElementAt(pacman.getX()-1, pacman.getY()+PACMAN_SIZE+1.5)==null&&getElementAt(pacman.getX()+PACMAN_SIZE+1, pacman.getY()+PACMAN_SIZE+1.5)==null;
+        return getElementAt(pacman.getX()+PACMAN_SIZE/2, pacman.getY()+PACMAN_SIZE+3)==null;
 	}
-	
+	private boolean	leftIsClear() {
+        return getElementAt(pacman.getX()-3, pacman.getY()+PACMAN_SIZE/2)==null;
+	}
+	private boolean rightIsClear() {
+        return getElementAt(pacman.getX()+PACMAN_SIZE+3, pacman.getY()+PACMAN_SIZE/2)==null;
+	}
 	private GObject getObjectinFront() {
 		if(vx>0) {
 			return getElementAt(pacman.getX()+PACMAN_SIZE+1, pacman.getY()+PACMAN_SIZE/2);
@@ -194,14 +235,10 @@ public class Pacman extends GraphicsProgram {
 	}
 	public void keyPressed(KeyEvent e) {
 		switch(e.getKeyCode()) {
-			case KeyEvent.VK_UP:	if(topIsClear()){vx=0;vy=-SPEED; break;} 
-									else{break;}
-			case KeyEvent.VK_DOWN:	if(bottomIsClear()){vx=0; vy=SPEED; break;}
-									else{break;}
-			case KeyEvent.VK_LEFT:	if(leftIsClear()){vx=-SPEED; vy=0; break;}
-									else{break;}
-			case KeyEvent.VK_RIGHT:	if(rightIsClear()){vx=SPEED; vy=0; break;} 
-									else{break;}
+			case KeyEvent.VK_UP:	turnRequest=1; break;
+			case KeyEvent.VK_DOWN:	turnRequest=2; break;
+			case KeyEvent.VK_LEFT:	turnRequest=3; break;
+			case KeyEvent.VK_RIGHT:	turnRequest=4; break;
 		}
 	}
 //	private boolean inBoundaries() {
