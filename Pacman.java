@@ -6,28 +6,9 @@ import java.applet.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class Pacman extends GraphicsProgram {
-	
-	/**Constants*/
-	public static final int APPLICATION_WIDTH = 570;
-	public static final int APPLICATION_HEIGHT = 630;
-
-	private static final int WIDTH = APPLICATION_WIDTH;
-	private static final int HEIGHT = APPLICATION_HEIGHT;
-	private static final int NROWS=21;
-	private static final int NCOLS=19;
-	private static final Color BACKGROUND_COLOR=Color.black;
-	
-	private static final int SMALL_DOT_SIZE=10;
-	private static final int WALL_SIZE=30;
-	private static final int PACMAN_SIZE = 28;
-	private static final double EPSILON = 1e-10;
-	private static final int DELAY = 7;
-	private static final double SPEED = 1;
+public class Pacman extends GraphicsProgram implements PacmanConstants{
 	
 	/**Private instance variables*/
-	private double vx=SPEED;
-	private double vy=0;
 	private GPacman pacman1;
 	private GPacman pacman2;
 	
@@ -38,28 +19,32 @@ public class Pacman extends GraphicsProgram {
 		startGame();
 		
 		while(true){
-			move();
-			changeDirection();
-			adjustForCollision();
+			move(pacman1);
+			move(pacman2);
+			changeDirection(pacman1);
+			changeDirection(pacman2);
+			adjustForCollision(pacman1);
+			adjustForCollision(pacman2);
 			eatDots();
-			teleport();
+			teleport(pacman1);
+			teleport(pacman2);
 			pause(DELAY);
 		}
 		
 	}
-	private void adjustForCollision() {
-		if(getObjectinFront() instanceof GRect) {
-			if(vx>0) {
-				pacman1.move(-1, 0);
+	private void adjustForCollision(GPacman pacman) {
+		if(getObjectinFront(pacman) instanceof GRect) {
+			if(pacman.getXVelocity()>0) {
+				pacman.move(-1, 0);
 			}
-			else if(vx<0) {
-				pacman1.move(1, 0);
+			else if(pacman.getXVelocity()<0) {
+				pacman.move(1, 0);
 			}
-			else if(vy>0) {
-				pacman1.move(0, -1);
+			else if(pacman.getYVelocity()>0) {
+				pacman.move(0, -1);
 			}
-			else if(vy<0) {
-				pacman1.move(0, 1);
+			else if(pacman.getYVelocity()<0) {
+				pacman.move(0, 1);
 			}
 		}
 	}
@@ -72,11 +57,14 @@ public class Pacman extends GraphicsProgram {
 	
 	private void initiatePacman() {
 		pacman1=new GPacman(PACMAN_SIZE);
+		pacman1.setVelocities(SPEED,(double)0);
 		add(pacman1,WALL_SIZE+1,WALL_SIZE+1);
+		
 		pacman2=new GPacman(PACMAN_SIZE);
 		pacman2.setBodyColor(new Color(157,74,0));
 		pacman2.turnLeft();
-		add(pacman2,WIDTH-2*WALL_SIZE+1,HEIGHT-2*WALL_SIZE+1);
+		pacman2.setVelocities(-SPEED, 0);
+		add(pacman2,PacmanConstants.WIDTH-2*WALL_SIZE+1,PacmanConstants.HEIGHT-2*WALL_SIZE+1);
 		
 	}
 	private void addWalls() {
@@ -129,44 +117,42 @@ public class Pacman extends GraphicsProgram {
 		wall.setFillColor(new Color(28, 70, 222));
 		add(wall,xcoord,ycoord);
 	}
-	private void changeDirection() {
-		int turnRequest=pacman1.getTurnRequest();
-		if(turnRequest==1&&canGoVertical()&&topIsClear()) {
-			vx=0;
-			vy=-1;
+
+	private void changeDirection(GPacman pacman) {
+		int turnRequest=pacman.getTurnRequest();
+		if(turnRequest==1&&canGoVertical(pacman.getX()+PACMAN_SIZE/2)&&topIsClear(pacman)) {
+			pacman.setVelocities(0, -SPEED);
 			turnRequest=0;
 		}
-		else if(turnRequest==2&&canGoVertical()&&bottomIsClear()) {
-			vx=0;
-			vy=1;
+		else if(turnRequest==2&&canGoVertical(pacman.getX()+PACMAN_SIZE/2)&&bottomIsClear(pacman)) {
+			pacman.setVelocities(0, SPEED);
 			turnRequest=0;
 		}
-		else if(turnRequest==3&&canGoHorizontal()&&leftIsClear()) {
-			vx=-1;
-			vy=0;
+		else if(turnRequest==3&&canGoHorizontal(pacman.getY()+PACMAN_SIZE/2)&&leftIsClear(pacman)) {
+			pacman.setVelocities(-SPEED, 0);
 			turnRequest=0;
 		}
-		else if(turnRequest==4&&canGoHorizontal()&&rightIsClear()) {
-			vx=1;
-			vy=0;
+		else if(turnRequest==4&&canGoHorizontal(pacman.getY()+PACMAN_SIZE/2)&&rightIsClear(pacman)) {
+			pacman.setVelocities(SPEED, 0);
 			turnRequest=0;
 		}
-	
 	}
-	private void move() {
-		if(vy<0) {
-			pacman1.turnUp();
+
+	private void move(GPacman pacman) {
+		if(pacman.getYVelocity()<0) {
+			pacman.turnUp();
 		}
-		else if(vy>0) {
-			pacman1.turnDown();
+		else if(pacman.getYVelocity()>0) {
+			pacman.turnDown();
 		}
-		else if(vx>0) {
-			pacman1.turnRight();
+		else if(pacman.getXVelocity()>0) {
+			pacman.turnRight();
 		}
-		else if(vx<0) {
-			pacman1.turnLeft();
+		else if(pacman.getXVelocity()<0) {
+			pacman.turnLeft();
 		}
-		pacman1.move(vx, vy);
+		pacman.animate();
+		pacman.move(pacman.getXVelocity(), pacman.getYVelocity());
 		
 	}
 	private void startGame() {
@@ -178,14 +164,18 @@ public class Pacman extends GraphicsProgram {
 		remove(prompt);
 	}
 	private void eatDots() {
-		GObject collision = getObjectinFront();
-		if(collision instanceof GOval) {
-			remove(collision);
+		GObject collision1 = getObjectinFront(pacman1);
+		if(collision1 instanceof GOval) {
+			remove(collision1);
+		}
+		GObject collision2= getObjectinFront(pacman2);
+		if(collision2 instanceof GOval) {
+			remove(collision2);
 		}
 	}
 
-	private boolean canGoHorizontal() {
-		double ycoord= pacman1.getY()+PACMAN_SIZE/2;
+	private boolean canGoHorizontal(double ycoord) {
+
 		for(int i=0;i<NROWS;i++) {
 			if((15+i*30-1)<ycoord&&ycoord<(15+i*30+1)) {
 				return true;
@@ -193,8 +183,8 @@ public class Pacman extends GraphicsProgram {
 		}
 		return false;
 	}
-	private boolean canGoVertical() {
-		double xcoord= pacman1.getX()+PACMAN_SIZE/2;
+	private boolean canGoVertical(double xcoord) {
+
 		for(int i=0;i<NCOLS;i++) {
 			if((15+i*30-1)<=xcoord&&xcoord<=(15+i*30+1)) {
 				return true;
@@ -202,30 +192,40 @@ public class Pacman extends GraphicsProgram {
 		}
 		return false;
 	}
-	private boolean topIsClear() {
-        return getElementAt(pacman1.getX()+PACMAN_SIZE/2, pacman1.getY()-3)==null;
+	/**
+	 * Method tells you if the space above pacman is clear or not.
+	 * @param pacman The Pacman for which it checks if top is clear.
+	 * @return True if top is clear, false otherwise.
+	 */
+	private boolean topIsClear(GPacman pacman) {
+        return getElementAt(pacman.getX()+PACMAN_SIZE/2, pacman.getY()-3)==null;
 	}
-	private boolean bottomIsClear() {
-        return getElementAt(pacman1.getX()+PACMAN_SIZE/2, pacman1.getY()+PACMAN_SIZE+3)==null;
+	private boolean bottomIsClear(GPacman pacman) {
+        return getElementAt(pacman.getX()+PACMAN_SIZE/2, pacman.getY()+PACMAN_SIZE+3)==null;
 	}
-	private boolean	leftIsClear() {
-        return getElementAt(pacman1.getX()-3, pacman1.getY()+PACMAN_SIZE/2)==null;
+	private boolean	leftIsClear(GPacman pacman) {
+        return getElementAt(pacman.getX()-3, pacman.getY()+PACMAN_SIZE/2)==null;
 	}
-	private boolean rightIsClear() {
-        return getElementAt(pacman1.getX()+PACMAN_SIZE+3, pacman1.getY()+PACMAN_SIZE/2)==null;
+	private boolean rightIsClear(GPacman pacman) {
+        return getElementAt(pacman.getX()+PACMAN_SIZE+3, pacman.getY()+PACMAN_SIZE/2)==null;
 	}
-	private GObject getObjectinFront() {
-		if(vx>0) {
-			return getElementAt(pacman1.getX()+PACMAN_SIZE+1, pacman1.getY()+PACMAN_SIZE/2);
+	/**
+	 * Gets the GObject in front of pacman. Returns null if nothing is there.
+	 * @param pacman The GPacman object of which it gets the object in front
+	 * @return The object in front of pacman.
+	 */
+	private GObject getObjectinFront(GPacman pacman) {
+		if(pacman.getXVelocity()>0) {
+			return getElementAt(pacman.getX()+PACMAN_SIZE+1, pacman.getY()+PACMAN_SIZE/2);
 		}
-		else if(vx<0) {
-			return getElementAt(pacman1.getX()-1, pacman1.getY()+PACMAN_SIZE/2);
+		else if(pacman.getXVelocity()<0) {
+			return getElementAt(pacman.getX()-1, pacman.getY()+PACMAN_SIZE/2);
 		}
-		else if(vy>0) {
-			return getElementAt(pacman1.getX()+PACMAN_SIZE/2, pacman1.getY()+PACMAN_SIZE+1);
+		else if(pacman.getYVelocity()>0) {
+			return getElementAt(pacman.getX()+PACMAN_SIZE/2, pacman.getY()+PACMAN_SIZE+1);
 		}
-		else if(vy<0) {
-			return getElementAt(pacman1.getX()+PACMAN_SIZE/2, pacman1.getY()-1);
+		else if(pacman.getYVelocity()<0) {
+			return getElementAt(pacman.getX()+PACMAN_SIZE/2, pacman.getY()-1);
 		}
 		return null;
 	}
@@ -235,12 +235,12 @@ public class Pacman extends GraphicsProgram {
 	 * When Pacman travels off-screen either to the left or right, this method teleports Pacman to the other side of 
 	 * the screen. 
 	 */
-	private void teleport() {
-		if(pacman1.getX()+PACMAN_SIZE/2<0) {
-			pacman1.setLocation(WIDTH-PACMAN_SIZE/2, pacman1.getY());
+	private void teleport(GPacman pacman) {
+		if(pacman.getX()+PACMAN_SIZE/2<0) {
+			pacman.setLocation(PacmanConstants.WIDTH-PACMAN_SIZE/2, pacman.getY());
 		}
-		else if(pacman1.getX()+PACMAN_SIZE/2>WIDTH) {
-			pacman1.setLocation(-PACMAN_SIZE/2, pacman1.getY());
+		else if(pacman.getX()+PACMAN_SIZE/2>PacmanConstants.WIDTH) {
+			pacman.setLocation(-PACMAN_SIZE/2, pacman.getY());
 		}
 	}
 	public void keyPressed(KeyEvent e) {
@@ -249,6 +249,10 @@ public class Pacman extends GraphicsProgram {
 			case KeyEvent.VK_DOWN:	pacman1.setTurnRequest(2); break;
 			case KeyEvent.VK_LEFT:	pacman1.setTurnRequest(3); break;
 			case KeyEvent.VK_RIGHT:	pacman1.setTurnRequest(4); break;
+			case KeyEvent.VK_W:	pacman2.setTurnRequest(1); break;
+			case KeyEvent.VK_S:	pacman2.setTurnRequest(2); break;
+			case KeyEvent.VK_A:	pacman2.setTurnRequest(3); break;
+			case KeyEvent.VK_D:	pacman2.setTurnRequest(4); break;
 		}
 	}
 	
