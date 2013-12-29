@@ -12,6 +12,10 @@ public class GPacman extends GCompound{
 	private int direction;
 	//Says whether frame number is increasing or decreasing
 	private boolean increasing;
+	
+	private int turnRequest=0;	//Variable that tells you which direction you want to turn.
+	
+	private Color bodyColor=Color.yellow;
 
 	
 	//initializes Tupac man going to the right
@@ -22,14 +26,14 @@ public class GPacman extends GCompound{
 		size= diameter;
 		body = new GArc(size, size, 45 - frameCounter * 3, 270 + frameCounter * 6);
 		body.setFilled(true);
-		body.setColor(Color.YELLOW);
-		add(body,0,0);
+		body.setColor(bodyColor);
+		add(body);
 	}
 	public void turnLeft(){
 		remove(body);
 		body = new GArc(size, size, 225 - frameCounter * 3, 270 + frameCounter * 6);
 		body.setFilled(true);
-		body.setColor(Color.YELLOW);
+		body.setColor(bodyColor);
 		add(body);
 		direction = 3;
 	}
@@ -38,7 +42,7 @@ public class GPacman extends GCompound{
 		remove(body);
 		body = new GArc(size, size, 45 - frameCounter * 3, 270 + frameCounter * 6);
 		body.setFilled(true);
-		body.setColor(Color.YELLOW);
+		body.setColor(bodyColor);
 		add(body);
 		direction = 1;
 	}
@@ -47,7 +51,7 @@ public class GPacman extends GCompound{
 		remove(body);
 		body = new GArc(size, size, 315 - frameCounter * 3, 270 + frameCounter * 6);
 		body.setFilled(true);
-		body.setColor(Color.YELLOW);
+		body.setColor(bodyColor);
 		add(body);
 		direction = 4;
 	}
@@ -55,7 +59,7 @@ public class GPacman extends GCompound{
 		remove(body);
 		body = new GArc(size, size, 135 - frameCounter * 3, 270 + frameCounter * 6);
 		body.setFilled(true);
-		body.setColor(Color.YELLOW);
+		body.setColor(bodyColor);
 		add(body);
 		direction = 2;
 	}
@@ -82,32 +86,41 @@ public class GPacman extends GCompound{
 		{case 1:
 			remove(body);
 			body = new GArc(size, size, 45 - frameCounter * 3, 270 + frameCounter * 6);
-			body.setFilled(true);
-			body.setColor(Color.YELLOW);
-			add(body);
+		
 			break;
 		case 2:
 			remove(body);
 			body = new GArc(size, size, 135 - frameCounter * 3, 270 + frameCounter * 6);
-			body.setFilled(true);
-			body.setColor(Color.YELLOW);
-			add(body);
 			break;
 		case 3:
 			remove(body);
 			body = new GArc(size, size, 225 - frameCounter * 3, 270 + frameCounter * 6);
-			body.setFilled(true);
-			body.setColor(Color.YELLOW);
-			add(body);
 			break;
 		case 4:
 			remove(body);
 			body = new GArc(size, size, 315 - frameCounter * 3, 270 + frameCounter * 6);
-			body.setFilled(true);
-			body.setColor(Color.YELLOW);
-			add(body);
 			break;
 		}
+		body.setFilled(true);
+		body.setColor(bodyColor);
+		add(body);
+	}
+	/**
+	 * 
+	 * @param n The turn request that you want to set.
+	 */
+	public void setTurnRequest(int n) {
+		turnRequest=n;
+	}
+	/**
+	 * 
+	 * @return Returns turnRequest
+	 */
+	public int getTurnRequest() {
+		return turnRequest;
+	}
+	public void setBodyColor(Color c) {
+		bodyColor=c;
 	}
 
 
