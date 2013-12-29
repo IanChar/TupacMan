@@ -11,6 +11,13 @@ public class Pacman extends GraphicsProgram implements PacmanConstants{
 	/**Private instance variables*/
 	private GPacman pacman1;
 	private GPacman pacman2;
+	private int pacman1score=0;
+	private int pacman2score=0;
+	private GLabel scoreboard;
+	
+	public static void main(String[] args) { 
+		 new Pacman().start(args); 
+		 } 
 	
 	public void init() {
 		setUpGameboard();
@@ -28,6 +35,7 @@ public class Pacman extends GraphicsProgram implements PacmanConstants{
 			eatDots();
 			teleport(pacman1);
 			teleport(pacman2);
+			updateScoreBoard();
 			pause(DELAY);
 		}
 		
@@ -53,6 +61,7 @@ public class Pacman extends GraphicsProgram implements PacmanConstants{
 		setBackground(BACKGROUND_COLOR);
 		initiatePacman();
 		addWalls();
+		addScoreBoard();
 	}
 	
 	private void initiatePacman() {
@@ -167,10 +176,12 @@ public class Pacman extends GraphicsProgram implements PacmanConstants{
 		GObject collision1 = getObjectinFront(pacman1);
 		if(collision1 instanceof GOval) {
 			remove(collision1);
+			pacman1score++;
 		}
 		GObject collision2= getObjectinFront(pacman2);
 		if(collision2 instanceof GOval) {
 			remove(collision2);
+			pacman2score++;
 		}
 	}
 
@@ -234,6 +245,7 @@ public class Pacman extends GraphicsProgram implements PacmanConstants{
 	 * 
 	 * When Pacman travels off-screen either to the left or right, this method teleports Pacman to the other side of 
 	 * the screen. 
+	 * @param pacman The GPacman object to be considered for teleportation.
 	 */
 	private void teleport(GPacman pacman) {
 		if(pacman.getX()+PACMAN_SIZE/2<0) {
@@ -242,6 +254,21 @@ public class Pacman extends GraphicsProgram implements PacmanConstants{
 		else if(pacman.getX()+PACMAN_SIZE/2>PacmanConstants.WIDTH) {
 			pacman.setLocation(-PACMAN_SIZE/2, pacman.getY());
 		}
+	}
+	private void addScoreBoard() {
+		scoreboard = new GLabel("Pacman 1: "+pacman1score+ "    Pacman 2: "+pacman2score);
+		scoreboard.setFont("Sans_Serif-22");
+		scoreboard.setColor(Color.WHITE);
+
+		add(scoreboard,0,scoreboard.getAscent());
+	}
+	private void updateScoreBoard() {
+		remove(scoreboard); 
+		scoreboard = new GLabel("Pacman 1: "+pacman1score+ "    Pacman 2: "+pacman2score);
+		scoreboard.setFont("Sans_Serif-22");
+		scoreboard.setColor(Color.WHITE);
+		add(scoreboard,0,scoreboard.getAscent());
+		
 	}
 	public void keyPressed(KeyEvent e) {
 		switch(e.getKeyCode()) {
