@@ -1,0 +1,61 @@
+import java.awt.Color;
+
+import acm.graphics.GCompound;
+
+
+public abstract class PacmanCharacter extends GCompound {
+	/**
+	 * Instance variables
+	 */
+	double size;
+	Color bodyColor;
+    //Variable that tells you which direction you want to turn. 1=Up 2=Down 3=Left 4=Right
+	int turnRequest;
+	//x Velocity
+	double vx;
+	//y Velocity
+	double vy;
+	int direction;
+	
+	public PacmanCharacter(Color color) {
+		bodyColor=color;
+		turnRequest=0;
+	}
+	public void setVelocities(double x, double y) {
+		vx=x;
+		vy=y;
+	}
+	public double getVx() {
+		return vx;
+	}
+	public double getVy() {
+		return vy;
+	}
+	public void setTurnRequest(int n) {
+		turnRequest=n;
+	}
+	public int getTurnRequest() {
+		return turnRequest;
+	}
+	public void setBodyColor(Color c) {
+		bodyColor=c;
+	}
+	public int getDirection() {
+		return direction;
+	}
+	abstract void animate();
+	
+	public void turnUp() {
+		direction=1;
+	}
+	public void turnDown() {
+		direction=2;
+	}
+	public void turnLeft() {
+		direction=3;
+	}
+	public void turnRight() {
+		direction=4;
+	}
+	
+}
