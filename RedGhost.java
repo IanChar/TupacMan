@@ -1,15 +1,15 @@
 import java.awt.Color;
 import acm.graphics.*;
 
-public class RedGhost extends Ghost{
+public class RedGhost extends Ghost implements PacmanConstants{
 
-	public RedGhost(){
-		setVx(-PacmanConstants.SPEED);
-		setVy(0);
+	public RedGhost(Color color){
+		super(color);
+		setVelocities(-SPEED,0);
 		setNextDirection(1);
 		setBody( new GArc(28,28,0,360));
 		getBody().setFilled(true);
-		getBody().setColor(Color.RED);
+		getBody().setColor(bodyColor);
 		add(getBody());
 	}
 	
@@ -43,5 +43,7 @@ public class RedGhost extends Ghost{
 		
 		setNextDirection(tempDir);
 	}
-	
+	public void animate() {
+		
+	}
 }
