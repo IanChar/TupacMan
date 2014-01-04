@@ -21,22 +21,22 @@ public class RedGhost extends Ghost implements PacmanConstants{
                         double yDif = target.getY()-getY();
                         double xDif = target.getX()-getX();
                         
-                        if(Math.abs(xDif) <= temp )//&& Math.abs(xDif) > 30)
+                        if(Math.abs(xDif) <= temp && Math.abs(xDif) > 30)
                         {
                                 temp = Math.abs(xDif);
                                 if(xDif > 0)
-                                        tempDir = 1;
+                                        tempDir = 4;
                                 else
                                         tempDir = 3;
                         }
                         
-                        if(Math.abs(yDif) < temp)// && Math.abs(yDif) > 30)
+                        if(Math.abs(yDif) < temp && Math.abs(yDif) > 30)
                         {
                                 temp = Math.abs(yDif);
                                 if(yDif > 0)
-                                        tempDir = 4;
-                                else
                                         tempDir = 2;
+                                else
+                                        tempDir = 1;
                         }
                 }
                 
